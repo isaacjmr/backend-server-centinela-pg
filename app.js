@@ -1,25 +1,40 @@
 // Requires
 var express = require('express');
-// const { Pool, Client } = require('pg');
 var pg = require('pg');
+var bdConf = require('./centinela/bd');
+var bodyParser = require('body-parser');
 
 // Inicializar variables
 var app = express();
 
+// Configuración body-parser
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-// Conexión a la Base de Datos
-const cs = 'postgresql://postgres:123@localhost:5434/centinela';
-const cliente = new pg.Client(cs);
-cliente.connect(() => {
-    console.log('Base de Datos, puerto: 5434: \x1b[32m%s\x1b[0m', 'online');
-});
+// Importar Rutas
+var appRoutes = require('./routes/app');
+var usuarioRoutes = require('./routes/usuario');
+var loginRoutes = require('./routes/login');
+
 
 // Rutas
-app.get('/', (req, res, next) => {
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Petición realizada correctamente'
-    });
+app.use('/usuario', usuarioRoutes);
+app.use('/login', loginRoutes);
+app.use('/', appRoutes);
+
+// Escuchar Base de Datos
+var pool = new pg.Pool(bdConf);
+
+pool.connect(function(err, client, done) {
+    if (err) {
+        return res.status(500).json({
+            ok: false,
+            mensaje: 'No es posible conectarse a la base de datos',
+            errores: err
+        })
+    }
+    console.log('Base de Datos, puerto: 5434: \x1b[32m%s\x1b[0m', 'online');
 });
 
 // Escuchar peticiones
