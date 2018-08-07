@@ -16,7 +16,7 @@ app.post('/', (req, res) => {
 
     // var password = bcrypt.hashSync(body.password, 10);
     var consulta = 'Select id_usuario, password, nombre, email, activo From seguridad.usuarios Where email = ' + body.email + ";";
-    console.log(consulta);
+    // console.log(consulta);
 
     pool.connect((err, client, done) => {
         if (err) {
